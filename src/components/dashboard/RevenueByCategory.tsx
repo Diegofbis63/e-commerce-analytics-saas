@@ -1,17 +1,12 @@
 "use client";
 
+import { useAppStore } from "@/store/appStore";
 import { motion } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 
-const categoryData = [
-  { name: "Electrónica", value: 35, color: "#8b5cf6" },
-  { name: "Ropa", value: 25, color: "#06b6d4" },
-  { name: "Hogar", value: 20, color: "#10b981" },
-  { name: "Deportes", value: 12, color: "#f59e0b" },
-  { name: "Otros", value: 8, color: "#6b7280" },
-];
-
 export function RevenueByCategory() {
+  const { categoryRevenue } = useAppStore();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -32,15 +27,16 @@ export function RevenueByCategory() {
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
-              data={categoryData}
+              data={categoryRevenue}
               cx="50%"
               cy="50%"
               innerRadius={60}
               outerRadius={90}
               paddingAngle={4}
               dataKey="value"
+              nameKey="name"
             >
-              {categoryData.map((entry, index) => (
+              {categoryRevenue.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Pie>

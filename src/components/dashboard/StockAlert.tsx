@@ -1,17 +1,16 @@
 "use client";
 
+import { useAppStore } from "@/store/appStore";
 import { motion } from "framer-motion";
-import { AlertTriangle, Package, X } from "lucide-react";
-
-const stockAlerts = [
-  { id: 1, product: "iPhone 15 Pro", current: 5, min: 20, status: "critical" },
-  { id: 2, product: "Samsung Galaxy S24", current: 8, min: 15, status: "warning" },
-  { id: 3, product: "MacBook Air M3", current: 3, min: 10, status: "critical" },
-  { id: 4, product: "AirPods Pro 2", current: 12, min: 25, status: "warning" },
-  { id: 5, product: "iPad Air", current: 6, min: 12, status: "warning" },
-];
+import { AlertTriangle, Package, RefreshCw } from "lucide-react";
 
 export function StockAlert() {
+  const { stockAlerts, isLoading, refreshData } = useAppStore();
+
+  const handleRefresh = () => {
+    refreshData();
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -28,16 +27,25 @@ export function StockAlert() {
             Productos bajo mínimo
           </p>
         </div>
-        <div className="p-2 rounded-lg bg-accent-rose/10">
-          <AlertTriangle className="w-5 h-5 text-accent-rose" />
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={handleRefresh}
+            disabled={isLoading}
+            className="p-2 rounded-lg bg-accent-rose/10 hover:bg-accent-rose/20 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-5 h-5 text-accent-rose ${isLoading ? 'animate-spin' : ''}`} />
+          </button>
+          <div className="p-2 rounded-lg bg-accent-rose/10">
+            <AlertTriangle className="w-5 h-5 text-accent-rose" />
+          </div>
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 max-h-72 overflow-y-auto">
         {stockAlerts.map((item) => (
           <div
             key={item.id}
-            className={`p-3 rounded-xl border ${
+            className={`p-3 rounded-xl border cursor-pointer hover:scale-[1.02] transition-transform ${
               item.status === "critical"
                 ? "bg-accent-rose/10 border-accent-rose/30"
                 : "bg-accent-amber/10 border-accent-amber/30"
@@ -46,7 +54,7 @@ export function StockAlert() {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Package className={`w-4 h-4 ${item.status === "critical" ? "text-accent-rose" : "text-accent-amber"}`} />
-                <span className="text-white font-medium text-sm">{item.product}</span>
+                <span className="text-white font-medium text-sm">{item.productName}</span>
               </div>
               <span
                 className={`text-xs px-2 py-1 rounded-full ${
@@ -64,11 +72,11 @@ export function StockAlert() {
                   className={`h-full rounded-full ${
                     item.status === "critical" ? "bg-accent-rose" : "bg-accent-amber"
                   }`}
-                  style={{ width: `${(item.current / item.min) * 100}%` }}
+                  style={{ width: `${Math.min((item.currentStock / item.minStock) * 100, 100)}%` }}
                 />
               </div>
               <span className="text-xs text-luxury-400">
-                {item.current}/{item.min}
+                {item.currentStock}/{item.minStock}
               </span>
             </div>
           </div>

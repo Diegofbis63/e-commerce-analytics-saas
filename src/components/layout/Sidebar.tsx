@@ -1,46 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useAppStore } from "@/store/appStore";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   Package,
-  Users,
   ShoppingCart,
+  Users,
   BarChart3,
   Settings,
   HelpCircle,
   ChevronLeft,
   ChevronRight,
   Zap,
+  TrendingUp,
+  Bell,
+  Search,
 } from "lucide-react";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", active: true },
-  { icon: Package, label: "Productos" },
-  { icon: ShoppingCart, label: "Pedidos" },
-  { icon: Users, label: "Clientes" },
-  { icon: BarChart3, label: "Analytics" },
-  { icon: Settings, label: "Configuración" },
-  { icon: HelpCircle, label: "Ayuda" },
+  { icon: LayoutDashboard, label: "Dashboard", id: "dashboard" as const },
+  { icon: Package, label: "Productos", id: "products" as const },
+  { icon: ShoppingCart, label: "Pedidos", id: "orders" as const },
+  { icon: Users, label: "Clientes", id: "customers" as const },
+  { icon: BarChart3, label: "Analytics", id: "analytics" as const },
+  { icon: TrendingUp, label: "Predicciones", id: "analytics" as const },
+  { icon: Settings, label: "Configuración", id: "settings" as const },
+  { icon: HelpCircle, label: "Ayuda", id: "settings" as const },
 ];
 
-interface SidebarProps {
-  isOpen: boolean;
-  onToggle: () => void;
-}
+export function Sidebar() {
+  const { sidebarOpen, activeView, setActiveView, toggleSidebar } = useAppStore();
 
-export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   return (
     <motion.aside
       initial={false}
-      animate={{ width: isOpen ? 256 : 80 }}
+      animate={{ width: sidebarOpen ? 256 : 80 }}
       className="h-screen bg-luxury-900/80 backdrop-blur-xl border-r border-glass-border flex flex-col"
     >
       {/* Logo */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-glass-border">
         <AnimatePresence mode="wait">
-          {isOpen && (
+          {sidebarOpen && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -55,10 +56,10 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           )}
         </AnimatePresence>
         <button
-          onClick={onToggle}
+          onClick={toggleSidebar}
           className="p-1.5 rounded-lg hover:bg-glass-100 text-luxury-400 transition-colors"
         >
-          {isOpen ? (
+          {sidebarOpen ? (
             <ChevronLeft className="w-5 h-5" />
           ) : (
             <ChevronRight className="w-5 h-5" />
@@ -67,19 +68,20 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-3 space-y-1">
+      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {menuItems.map((item) => (
           <button
             key={item.label}
+            onClick={() => setActiveView(item.id)}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
-              item.active
+              activeView === item.id
                 ? "bg-accent-violet/20 text-accent-violet border border-accent-violet/30"
                 : "text-luxury-400 hover:bg-glass-100 hover:text-white"
             }`}
           >
             <item.icon className="w-5 h-5 flex-shrink-0" />
             <AnimatePresence mode="wait">
-              {isOpen && (
+              {sidebarOpen && (
                 <motion.span
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -94,14 +96,29 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         ))}
       </nav>
 
+      {/* Quick Stats */}
+      {sidebarOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="p-3 border-t border-glass-border"
+        >
+          <div className="p-3 rounded-xl bg-gradient-to-br from-accent-violet/20 to-accent-cyan/20 border border-accent-violet/30">
+            <p className="text-xs text-luxury-400 mb-1">Ventas del día</p>
+            <p className="text-lg font-bold text-white">$4,523</p>
+            <p className="text-xs text-accent-emerald">+12% vs ayer</p>
+          </div>
+        </motion.div>
+      )}
+
       {/* User */}
       <div className="p-3 border-t border-glass-border">
-        <div className={`flex items-center gap-3 p-3 rounded-xl bg-glass-100 ${!isOpen ? "justify-center" : ""}`}>
+        <div className={`flex items-center gap-3 p-3 rounded-xl bg-glass-100 ${!sidebarOpen ? "justify-center" : ""}`}>
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent-cyan to-accent-violet flex items-center justify-center text-white text-sm font-bold">
             F
           </div>
           <AnimatePresence mode="wait">
-            {isOpen && (
+            {sidebarOpen && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

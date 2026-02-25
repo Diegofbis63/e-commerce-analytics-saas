@@ -1,17 +1,12 @@
 "use client";
 
+import { useAppStore } from "@/store/appStore";
 import { motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
-const segmentData = [
-  { name: "VIP", value: 342, clv: "$2,450", color: "#8b5cf6" },
-  { name: "Premium", value: 856, clv: "$1,120", color: "#06b6d4" },
-  { name: "Regular", value: 1240, clv: "$580", color: "#10b981" },
-  { name: "Nuevo", value: 420, clv: "$180", color: "#f59e0b" },
-  { name: "Inactivo", value: 180, clv: "$90", color: "#6b7280" },
-];
-
 export function CustomerSegments() {
+  const { customerSegments } = useAppStore();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -30,7 +25,7 @@ export function CustomerSegments() {
 
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={segmentData} layout="vertical">
+          <BarChart data={customerSegments} layout="vertical">
             <XAxis type="number" stroke="#6b7280" fontSize={10} />
             <YAxis
               dataKey="name"
@@ -46,9 +41,10 @@ export function CustomerSegments() {
                 borderRadius: "8px",
               }}
               cursor={{ fill: "rgba(255,255,255,0.05)" }}
+              formatter={(value: number, name: string) => [value, name === "count" ? "Clientes" : value]}
             />
-            <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-              {segmentData.map((entry, index) => (
+            <Bar dataKey="count" name="Clientes" radius={[0, 4, 4, 0]}>
+              {customerSegments.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Bar>
@@ -57,7 +53,7 @@ export function CustomerSegments() {
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-2">
-        {segmentData.map((segment) => (
+        {customerSegments.map((segment) => (
           <div
             key={segment.name}
             className="flex justify-between text-sm p-2 rounded-lg bg-luxury-900/50"

@@ -1,5 +1,6 @@
 "use client";
 
+import { useAppStore } from "@/store/appStore";
 import { motion } from "framer-motion";
 import {
   AreaChart,
@@ -10,23 +11,17 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-
-const salesData = [
-  { month: "Ene", ventas: 4200, prediccion: null },
-  { month: "Feb", ventas: 3800, prediccion: null },
-  { month: "Mar", ventas: 5100, prediccion: null },
-  { month: "Abr", ventas: 4600, prediccion: null },
-  { month: "May", ventas: 5800, prediccion: null },
-  { month: "Jun", ventas: 6200, prediccion: null },
-  { month: "Jul", ventas: 7100, prediccion: null },
-  { month: "Ago", ventas: 6800, prediccion: null },
-  { month: "Sep", ventas: 7900, prediccion: null },
-  { month: "Oct", ventas: 8200, prediccion: null },
-  { month: "Nov", ventas: null, prediccion: 9100 },
-  { month: "Dic", ventas: null, prediccion: 10500 },
-];
+import { formatCurrency } from "@/data/mockData";
 
 export function SalesChart() {
+  const { salesData } = useAppStore();
+
+  const data = salesData.map((d) => ({
+    month: d.month,
+    ventas: d.sales,
+    prediccion: d.prediction,
+  }));
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -57,7 +52,7 @@ export function SalesChart() {
 
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={salesData}>
+          <AreaChart data={data}>
             <defs>
               <linearGradient id="colorVentas" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
@@ -92,7 +87,7 @@ export function SalesChart() {
               }}
               labelStyle={{ color: "#fff" }}
               itemStyle={{ color: "#9ca3af" }}
-              formatter={(value: number) => [`$${value.toLocaleString()}`, "Ventas"]}
+              formatter={(value: number) => [value ? formatCurrency(value) : "N/A", ""]}
             />
             <Area
               type="monotone"
@@ -101,6 +96,7 @@ export function SalesChart() {
               strokeWidth={2}
               fillOpacity={1}
               fill="url(#colorVentas)"
+              name="Ventas Reales"
             />
             <Area
               type="monotone"
@@ -110,6 +106,7 @@ export function SalesChart() {
               strokeDasharray="5 5"
               fillOpacity={1}
               fill="url(#colorPrediccion)"
+              name="Predicción"
             />
           </AreaChart>
         </ResponsiveContainer>
