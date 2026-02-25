@@ -50,63 +50,74 @@ export function SalesChart() {
         </div>
       </div>
 
-      <div className="h-80">
+      <div className="h-80 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent-violet/5 to-transparent pointer-events-none" />
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data}>
             <defs>
               <linearGradient id="colorVentas" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.4} />
+                <stop offset="60%" stopColor="#8b5cf6" stopOpacity={0.1} />
+                <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="colorPrediccion" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
+                <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.4} />
+                <stop offset="60%" stopColor="#06b6d4" stopOpacity={0.1} />
+                <stop offset="100%" stopColor="#06b6d4" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+            <CartesianGrid strokeDasharray="10 10" stroke="rgba(255,255,255,0.03)" vertical={false} />
             <XAxis
               dataKey="month"
-              stroke="#6b7280"
-              fontSize={12}
+              stroke="#4b5563"
+              fontSize={11}
               tickLine={false}
               axisLine={false}
+              dy={10}
             />
             <YAxis
-              stroke="#6b7280"
-              fontSize={12}
+              stroke="#4b5563"
+              fontSize={11}
               tickLine={false}
               axisLine={false}
               tickFormatter={(value) => `$${value / 1000}k`}
+              dx={-10}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "rgba(0,0,0,0.8)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                borderRadius: "8px",
-                backdropFilter: "blur(10px)",
+                backgroundColor: "rgba(10, 10, 15, 0.85)",
+                border: "1px solid rgba(139, 92, 246, 0.3)",
+                borderRadius: "16px",
+                backdropFilter: "blur(20px)",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
               }}
-              labelStyle={{ color: "#fff" }}
-              itemStyle={{ color: "#9ca3af" }}
+              labelStyle={{ color: "#fff", fontWeight: "bold", marginBottom: "4px" }}
+              itemStyle={{ padding: "2px 0" }}
               formatter={(value: number) => [value ? formatCurrency(value) : "N/A", ""]}
+              cursor={{ stroke: '#8b5cf6', strokeWidth: 1 }}
             />
             <Area
               type="monotone"
               dataKey="ventas"
               stroke="#8b5cf6"
-              strokeWidth={2}
+              strokeWidth={3}
               fillOpacity={1}
               fill="url(#colorVentas)"
+              activeDot={{ r: 6, fill: '#8b5cf6', stroke: '#fff', strokeWidth: 2 }}
               name="Ventas Reales"
+              animationDuration={2000}
             />
             <Area
               type="monotone"
               dataKey="prediccion"
               stroke="#06b6d4"
-              strokeWidth={2}
-              strokeDasharray="5 5"
+              strokeWidth={3}
+              strokeDasharray="8 8"
               fillOpacity={1}
               fill="url(#colorPrediccion)"
+              activeDot={{ r: 6, fill: '#06b6d4', stroke: '#fff', strokeWidth: 2 }}
               name="Predicción"
+              animationDuration={2500}
             />
           </AreaChart>
         </ResponsiveContainer>

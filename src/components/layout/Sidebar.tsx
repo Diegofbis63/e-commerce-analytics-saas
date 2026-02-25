@@ -35,29 +35,32 @@ export function Sidebar() {
   return (
     <motion.aside
       initial={false}
-      animate={{ width: sidebarOpen ? 256 : 80 }}
-      className="h-screen bg-luxury-900/80 backdrop-blur-xl border-r border-glass-border flex flex-col"
+      animate={{ width: sidebarOpen ? 280 : 88 }}
+      className="h-screen bg-luxury-950/40 backdrop-blur-2xl border-r border-white/5 flex flex-col relative z-50 shadow-2xl"
     >
-      {/* Logo */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-glass-border">
+      {/* Branding */}
+      <div className="h-20 flex items-center justify-between px-6 border-b border-white/5">
         <AnimatePresence mode="wait">
           {sidebarOpen && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex items-center gap-2"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              className="flex items-center gap-3"
             >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-violet to-accent-cyan flex items-center justify-center">
-                <Zap className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-accent-violet via-accent-cyan to-accent-indigo flex items-center justify-center shadow-lg shadow-accent-violet/20 group cursor-pointer">
+                <Zap className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
               </div>
-              <span className="text-white font-bold">E-Analytics</span>
+              <div className="flex flex-col">
+                <span className="text-white font-black tracking-tighter text-lg leading-tight uppercase">Quantix</span>
+                <span className="text-[10px] text-accent-cyan font-bold tracking-[0.2em] uppercase opacity-80">AI Analytics</span>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
         <button
           onClick={toggleSidebar}
-          className="p-1.5 rounded-lg hover:bg-glass-100 text-luxury-400 transition-colors"
+          className="p-2 rounded-xl hover:bg-white/5 text-luxury-400 hover:text-white transition-all border border-transparent hover:border-white/10"
         >
           {sidebarOpen ? (
             <ChevronLeft className="w-5 h-5" />
@@ -68,54 +71,64 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto custom-scrollbar">
         {menuItems.map((item) => (
           <button
             key={item.label}
             onClick={() => setActiveView(item.id)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
-              activeView === item.id
-                ? "bg-accent-violet/20 text-accent-violet border border-accent-violet/30"
-                : "text-luxury-400 hover:bg-glass-100 hover:text-white"
-            }`}
+            className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 relative group ${activeView === item.id
+                ? "bg-white/5 text-white shadow-inner shadow-white/5 border border-white/10"
+                : "text-luxury-400 hover:text-white hover:bg-white/[0.02]"
+              }`}
           >
-            <item.icon className="w-5 h-5 flex-shrink-0" />
+            <item.icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-300 ${activeView === item.id ? "text-accent-violet scale-110" : "group-hover:scale-110"}`} />
             <AnimatePresence mode="wait">
               {sidebarOpen && (
                 <motion.span
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="text-sm font-medium"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  className="text-sm font-semibold tracking-tight"
                 >
                   {item.label}
                 </motion.span>
               )}
             </AnimatePresence>
+            {activeView === item.id && (
+              <motion.div
+                layoutId="active-nav"
+                className="absolute left-0 w-1 h-6 bg-accent-violet rounded-full blur-[1px]"
+              />
+            )}
           </button>
         ))}
       </nav>
 
-      {/* Quick Stats */}
+      {/* Pro Badge */}
       {sidebarOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="p-3 border-t border-glass-border"
-        >
-          <div className="p-3 rounded-xl bg-gradient-to-br from-accent-violet/20 to-accent-cyan/20 border border-accent-violet/30">
-            <p className="text-xs text-luxury-400 mb-1">Ventas del día</p>
-            <p className="text-lg font-bold text-white">$4,523</p>
-            <p className="text-xs text-accent-emerald">+12% vs ayer</p>
+        <div className="px-6 py-6 border-t border-white/5">
+          <div className="relative p-5 rounded-3xl bg-gradient-to-br from-luxury-900/60 to-black/40 border border-white/10 overflow-hidden group">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-accent-violet/10 blur-3xl -mr-10 -mt-10 group-hover:bg-accent-violet/20 transition-all" />
+            <div className="relative z-10">
+              <p className="text-[10px] font-black text-accent-violet uppercase tracking-widest mb-1">Status: Operational</p>
+              <p className="text-sm font-bold text-white mb-3">Enterprise Plan</p>
+              <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden mb-1">
+                <div className="w-3/4 h-full bg-accent-violet rounded-full" />
+              </div>
+              <p className="text-[10px] text-luxury-500 font-medium">92% AI Accuracy</p>
+            </div>
           </div>
-        </motion.div>
+        </div>
       )}
 
-      {/* User */}
-      <div className="p-3 border-t border-glass-border">
-        <div className={`flex items-center gap-3 p-3 rounded-xl bg-glass-100 ${!sidebarOpen ? "justify-center" : ""}`}>
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent-cyan to-accent-violet flex items-center justify-center text-white text-sm font-bold">
-            F
+      {/* User Session */}
+      <div className="p-4 border-t border-white/5 bg-black/20">
+        <div className={`flex items-center gap-4 p-3 rounded-2xl border border-transparent transition-all ${sidebarOpen ? "hover:bg-white/5 hover:border-white/5" : "justify-center"}`}>
+          <div className="relative">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-accent-cyan to-accent-violet flex items-center justify-center text-white text-base font-black shadow-lg">
+              F
+            </div>
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-accent-emerald border-2 border-luxury-950 rounded-full" />
           </div>
           <AnimatePresence mode="wait">
             {sidebarOpen && (
@@ -123,10 +136,10 @@ export function Sidebar() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex-1"
+                className="flex-1 truncate"
               >
-                <p className="text-sm text-white font-medium">Federico</p>
-                <p className="text-xs text-luxury-500">Admin</p>
+                <p className="text-sm text-white font-bold tracking-tight">Federico</p>
+                <p className="text-[10px] text-luxury-500 font-bold uppercase tracking-widest">Chief Executive</p>
               </motion.div>
             )}
           </AnimatePresence>

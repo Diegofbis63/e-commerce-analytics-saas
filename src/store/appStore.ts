@@ -1,8 +1,8 @@
 "use client";
 
 import { create } from "zustand";
-import { 
-  mockData, 
+import {
+  mockData,
   supabase,
   KpiData,
   SalesData,
@@ -31,19 +31,19 @@ interface AppState {
   customers: any[];
   orders: any[];
   categories: { id: string; name: string; productCount: number }[];
-  
+
   // UI State
   isLoading: boolean;
   isDemo: boolean;
-  activeView: "dashboard" | "products" | "orders" | "customers" | "analytics" | "settings";
+  activeView: "dashboard" | "products" | "orders" | "customers" | "analytics" | "predictions" | "settings" | "help";
   selectedDateRange: string;
   sidebarOpen: boolean;
   notification: { message: string; type: "success" | "error" | "info" } | null;
-  
+
   // Modal State
   modalOpen: string | null;
   selectedItem: any;
-  
+
   // Actions
   setActiveView: (view: AppState["activeView"]) => void;
   setDateRange: (range: string) => void;
@@ -53,7 +53,7 @@ interface AppState {
   clearNotification: () => void;
   openModal: (modal: string, item?: any) => void;
   closeModal: () => void;
-  
+
   // CRUD Actions
   refreshData: () => Promise<void>;
   addProduct: (product: any) => Promise<void>;
@@ -78,7 +78,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   customers: mockData.customers,
   orders: mockData.orders,
   categories: mockData.categories,
-  
+
   // Initial UI State
   isLoading: false,
   isDemo: isDemoMode,
@@ -88,7 +88,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   notification: null,
   modalOpen: null,
   selectedItem: null,
-  
+
   // Actions
   setActiveView: (view) => set({ activeView: view }),
   setDateRange: (range) => {
@@ -97,25 +97,25 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
   setLoading: (loading) => set({ isLoading: loading }),
-  
+
   showNotification: (message, type) => {
     set({ notification: { message, type } });
     setTimeout(() => {
       set({ notification: null });
     }, 3000);
   },
-  
+
   clearNotification: () => set({ notification: null }),
-  
+
   openModal: (modal, item = null) => set({ modalOpen: modal, selectedItem: item }),
   closeModal: () => set({ modalOpen: null, selectedItem: null }),
-  
+
   refreshData: async () => {
     const { isDemo } = get();
     if (isDemo) {
       set({ isLoading: true });
       await new Promise(resolve => setTimeout(resolve, 500));
-      set({ 
+      set({
         kpi: mockData.kpi,
         salesData: mockData.salesData,
         categoryRevenue: mockData.categoryRevenue,
@@ -123,78 +123,64 @@ export const useAppStore = create<AppState>((set, get) => ({
         stockAlerts: mockData.stockAlerts,
         prediction: mockData.prediction,
         topProducts: mockData.topProducts,
-        isLoading: false 
+        isLoading: false
       });
       return;
     }
-    
+
     set({ isLoading: true });
-    
+
     try {
-      // Fetch products
-      const { data: products } = await supabase
-        .from('products')
-        .select('*')
-        .eq('is_active', true);
-      
-      // Fetch customers
-      const { data: customers } = await supabase
-        .from('customers')
-        .select('*');
-      
-      // Fetch orders
-      const { data: orders } = await supabase
-        .from('orders')
-        .select('*')
-        .order('order_date', { ascending: false })
-        .limit(50);
-      
-      // Fetch categories
-      const { data: categories } = await supabase
-        .from('categories')
-        .select('*');
-      
-      // Calculate KPIs
-      const totalSales = orders?.reduce((sum, o) => sum + (o.status !== 'cancelled' ? o.total : 0), 0) || 0;
-      const totalOrders = orders?.filter(o => o.status !== 'cancelled').length || 0;
-      const vipCustomers = customers?.filter(c => c.segment === 'vip').length || 0;
+      // Fetch products, customers, orders as basic data
+      const [{ data: products }, { data: customers }, { data: orders }, { data: categories }] = await Promise.all([
+        supabase.from('products').select('*').eq('is_active', true),
+        supabase.from('customers').select('*'),
+        supabase.from('orders').select('*').order('order_date', { ascending: false }).limit(50),
+        supabase.from('categories').select('*')
+      ]);
+
+      // Fetch from High-Value Views
+      const [{ data: clvData }, { data: salesAnalytics }, { data: stockAlertsData }] = await Promise.all([
+        supabase.from('customer_clv').select('*'),
+        supabase.from('sales_analytics').select('*').limit(12),
+        supabase.from('stock_alerts').select('*')
+      ]);
+
+      // Calculate KPIs from views
+      const totalSales = salesAnalytics?.reduce((sum, s) => sum + s.total_revenue, 0) || 0;
+      const totalOrders = salesAnalytics?.reduce((sum, s) => sum + s.order_count, 0) || 0;
+      const vipCustomers = clvData?.filter(c => c.dynamic_segment === 'VIP').length || 0;
       const avgTicket = totalOrders > 0 ? totalSales / totalOrders : 0;
-      
-      // Stock alerts
-      const stockAlerts = products
-        ?.filter(p => p.stock_quantity <= p.min_stock_level)
-        .map(p => ({
-          id: p.id,
-          productName: p.name,
-          currentStock: p.stock_quantity,
-          minStock: p.min_stock_level,
-          status: p.stock_quantity === 0 ? 'critical' as const : 'warning' as const
-        })) || [];
-      
-      // Customer segments
-      const segmentCounts = customers?.reduce((acc, c) => {
-        acc[c.segment] = (acc[c.segment] || 0) + 1;
+
+      // Stock alerts mapping
+      const stockAlerts = stockAlertsData?.map(s => ({
+        id: s.id,
+        productName: s.product_name,
+        currentStock: s.stock_quantity,
+        minStock: s.min_stock_level,
+        status: s.status === 'out_of_stock' || s.status === 'critical' ? 'critical' as const : 'warning' as const
+      })) || [];
+
+      // Customer segments mapping
+      const segmentCounts = clvData?.reduce((acc, c) => {
+        acc[c.dynamic_segment] = (acc[c.dynamic_segment] || 0) + 1;
         return acc;
       }, {} as Record<string, number>) || {};
-      
+
       const customerSegments = [
-        { name: 'VIP', count: segmentCounts['vip'] || 0, clv: '$2,450', color: '#8b5cf6' },
-        { name: 'Premium', count: segmentCounts['premium'] || 0, clv: '$1,120', color: '#06b6d4' },
-        { name: 'Regular', count: segmentCounts['regular'] || 0, clv: '$580', color: '#10b981' },
-        { name: 'Nuevo', count: segmentCounts['new'] || 0, clv: '$180', color: '#f59e0b' },
-        { name: 'Inactivo', count: segmentCounts['inactive'] || 0, clv: '$90', color: '#6b7280' },
+        { name: 'VIP', count: segmentCounts['VIP'] || 0, clv: '$' + (clvData?.find(c => c.dynamic_segment === 'VIP')?.monetary || 0), color: '#8b5cf6' },
+        { name: 'Premium', count: segmentCounts['Premium'] || 0, clv: '$' + (clvData?.find(c => c.dynamic_segment === 'Premium')?.monetary || 0), color: '#06b6d4' },
+        { name: 'Regular', count: segmentCounts['Regular'] || 0, clv: '$' + (clvData?.find(c => c.dynamic_segment === 'Regular')?.monetary || 0), color: '#10b981' },
+        { name: 'Casual', count: segmentCounts['Casual'] || 0, clv: '$' + (clvData?.find(c => c.dynamic_segment === 'Casual')?.monetary || 0), color: '#f59e0b' },
       ] as CustomerSegment[];
-      
-      // Top products
-      const topProducts = products?.slice(0, 5).map((p, i) => ({
-        id: p.id,
-        name: p.name,
-        category: 'General',
-        sales: Math.floor(Math.random() * 200) + 50,
-        revenue: p.price * Math.floor(Math.random() * 100 + 50),
-        growth: Math.floor(Math.random() * 30)
-      })) || [];
-      
+
+      // Sales Data for Chart
+      const salesData = salesAnalytics?.map(s => ({
+        month: new Date(s.order_date).toLocaleString('default', { month: 'short' }),
+        sales: s.total_revenue,
+        prediction: null
+      })).reverse() || [];
+
       set({
         products: products || [],
         customers: customers || [],
@@ -202,7 +188,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         categories: categories?.map(c => ({ ...c, productCount: 0 })) || [],
         kpi: {
           totalSales,
-          totalSalesChange: 12.5,
+          totalSalesChange: 12.5, // Mocked change for now
           totalOrders,
           totalOrdersChange: 8.2,
           vipCustomers,
@@ -210,9 +196,9 @@ export const useAppStore = create<AppState>((set, get) => ({
           avgTicket,
           avgTicketChange: -2.1
         },
+        salesData: salesData.length > 0 ? salesData : mockData.salesData,
         stockAlerts,
         customerSegments,
-        topProducts,
         isLoading: false
       });
     } catch (error) {
@@ -221,10 +207,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       get().showNotification('Error al cargar datos', 'error');
     }
   },
-  
+
   addProduct: async (product) => {
     const { isDemo, refreshData, showNotification } = get();
-    
+
     if (isDemo) {
       await new Promise(resolve => setTimeout(resolve, 500));
       set(state => ({
@@ -233,7 +219,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       showNotification('Producto agregado correctamente', 'success');
       return;
     }
-    
+
     try {
       const { error } = await supabase.from('products').insert([product]);
       if (error) throw error;
@@ -244,10 +230,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       showNotification('Error al agregar producto', 'error');
     }
   },
-  
+
   updateProduct: async (id, product) => {
     const { isDemo, refreshData, showNotification } = get();
-    
+
     if (isDemo) {
       await new Promise(resolve => setTimeout(resolve, 500));
       set(state => ({
@@ -256,7 +242,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       showNotification('Producto actualizado correctamente', 'success');
       return;
     }
-    
+
     try {
       const { error } = await supabase
         .from('products')
@@ -270,10 +256,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       showNotification('Error al actualizar producto', 'error');
     }
   },
-  
+
   deleteProduct: async (id) => {
     const { isDemo, refreshData, showNotification } = get();
-    
+
     if (isDemo) {
       await new Promise(resolve => setTimeout(resolve, 500));
       set(state => ({
@@ -282,7 +268,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       showNotification('Producto eliminado correctamente', 'success');
       return;
     }
-    
+
     try {
       const { error } = await supabase
         .from('products')
@@ -296,10 +282,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       showNotification('Error al eliminar producto', 'error');
     }
   },
-  
+
   addCustomer: async (customer) => {
     const { isDemo, refreshData, showNotification } = get();
-    
+
     if (isDemo) {
       await new Promise(resolve => setTimeout(resolve, 500));
       set(state => ({
@@ -308,7 +294,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       showNotification('Cliente agregado correctamente', 'success');
       return;
     }
-    
+
     try {
       const { error } = await supabase.from('customers').insert([customer]);
       if (error) throw error;
@@ -319,10 +305,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       showNotification('Error al agregar cliente', 'error');
     }
   },
-  
+
   updateCustomer: async (id, customer) => {
     const { isDemo, refreshData, showNotification } = get();
-    
+
     if (isDemo) {
       await new Promise(resolve => setTimeout(resolve, 500));
       set(state => ({
@@ -331,7 +317,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       showNotification('Cliente actualizado correctamente', 'success');
       return;
     }
-    
+
     try {
       const { error } = await supabase
         .from('customers')
@@ -345,10 +331,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       showNotification('Error al actualizar cliente', 'error');
     }
   },
-  
+
   addOrder: async (order) => {
     const { isDemo, refreshData, showNotification } = get();
-    
+
     if (isDemo) {
       await new Promise(resolve => setTimeout(resolve, 500));
       set(state => ({
@@ -357,7 +343,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       showNotification('Pedido creado correctamente', 'success');
       return;
     }
-    
+
     try {
       const { error } = await supabase.from('orders').insert([order]);
       if (error) throw error;
@@ -368,10 +354,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       showNotification('Error al crear pedido', 'error');
     }
   },
-  
+
   updateOrderStatus: async (id, status) => {
     const { isDemo, refreshData, showNotification } = get();
-    
+
     if (isDemo) {
       await new Promise(resolve => setTimeout(resolve, 500));
       set(state => ({
@@ -380,7 +366,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       showNotification('Estado del pedido actualizado', 'success');
       return;
     }
-    
+
     try {
       const { error } = await supabase
         .from('orders')

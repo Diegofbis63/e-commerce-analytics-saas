@@ -48,25 +48,36 @@ export function KpiCard({ title, value, change, trend, icon, color }: KpiCardPro
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.02 }}
-      className={`glass-card p-6 ${colors.glow} transition-all duration-300`}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      whileHover={{
+        scale: 1.05,
+        translateY: -5,
+        boxShadow: "0 20px 40px rgba(0,0,0,0.4)"
+      }}
+      className={`relative overflow-hidden glass-card p-6 ${colors.glow} group transition-all duration-500`}
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className={`p-3 rounded-xl ${colors.bg}`}>
-          <Icon className={`w-6 h-6 ${colors.text}`} />
+      <div className="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+
+      <div className="flex items-center justify-between mb-4 relative z-10">
+        <div className={`p-4 rounded-2xl ${colors.bg} relative overflow-hidden group-hover:glow-cyan transition-all duration-300`}>
+          <Icon className={`w-6 h-6 ${colors.text} relative z-10`} />
         </div>
-        <span
-          className={`text-sm font-medium ${
-            trend === "up" ? "text-accent-emerald" : "text-accent-rose"
-          }`}
-        >
+        <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${trend === "up" ? "bg-accent-emerald/20 text-accent-emerald" : "bg-accent-rose/20 text-accent-rose"
+          }`}>
+          {trend === "up" ? <TrendingUp className="w-3 h-3" /> : <TrendingUp className="w-3 h-3 rotate-180" />}
           {change}
-        </span>
+        </div>
       </div>
-      <h3 className="text-luxury-400 text-sm font-medium mb-1">{title}</h3>
-      <p className="text-2xl font-bold text-white">{value}</p>
+
+      <div className="relative z-10">
+        <h3 className="text-luxury-400 text-sm font-semibold tracking-wide uppercase mb-1">{title}</h3>
+        <p className="text-3xl font-bold text-white tracking-tight leading-none italic">
+          <span className="text-gradient">{value}</span>
+        </p>
+      </div>
+
+      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-50" />
     </motion.div>
   );
 }
