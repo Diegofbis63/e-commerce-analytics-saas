@@ -8,18 +8,18 @@ import { useState } from "react";
 import { formatCurrency, formatNumber } from "@/data/mockData";
 
 export function ProductsView() {
-  const { products, isLoading, refreshData } = useAppStore();
+  const { products, isLoading, refreshData, openModal } = useAppStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           product.sku.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredProducts = products.filter((product: any) => {
+    const matchesSearch = product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           product.sku?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const categories = Array.from(new Set(products.map(p => p.category)));
+  const categories = Array.from(new Set(products.map((p: any) => p.category).filter(Boolean)));
 
   const handleRefresh = () => {
     refreshData();
@@ -43,7 +43,10 @@ export function ProductsView() {
             >
               <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent-violet hover:bg-accent-violet/80 text-white font-medium transition-colors">
+            <button 
+              onClick={() => openModal("addProduct")}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent-violet hover:bg-accent-violet/80 text-white font-medium transition-colors"
+            >
               <Plus className="w-4 h-4" />
               Nuevo Producto
             </button>
@@ -71,7 +74,7 @@ export function ProductsView() {
                 className="px-4 py-2 rounded-xl bg-glass-100 border border-glass-border text-white focus:outline-none focus:border-accent-violet"
               >
                 <option value="all">Todas las categorías</option>
-                {categories.map(cat => (
+                {categories.map((cat: any) => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
@@ -97,7 +100,7 @@ export function ProductsView() {
                 </tr>
               </thead>
               <tbody>
-                {filteredProducts.map((product) => (
+                {filteredProducts.map((product: any) => (
                   <tr key={product.id} className="border-t border-glass-border hover:bg-glass-100 transition-colors">
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3">
@@ -114,25 +117,25 @@ export function ProductsView() {
                       </span>
                     </td>
                     <td className="py-4 px-4 text-right text-white font-medium">
-                      {formatCurrency(product.price)}
+                      {formatCurrency(product.price || 0)}
                     </td>
                     <td className="py-4 px-4 text-right">
                       <span className={`font-medium ${
-                        product.stockQuantity <= product.minStockLevel 
-                          ? product.stockQuantity === 0 
+                        (product.stockQuantity || 0) <= (product.minStockLevel || 0) 
+                          ? (product.stockQuantity || 0) === 0 
                             ? "text-accent-rose" 
                             : "text-accent-amber"
                           : "text-luxury-300"
                       }`}>
-                        {formatNumber(product.stockQuantity)}
+                        {formatNumber(product.stockQuantity || 0)}
                       </span>
                     </td>
                     <td className="py-4 px-4 text-center">
-                      {product.stockQuantity === 0 ? (
+                      {(product.stockQuantity || 0) === 0 ? (
                         <span className="px-2 py-1 rounded-full bg-accent-rose/20 text-accent-rose text-xs">
                           Sin stock
                         </span>
-                      ) : product.stockQuantity <= product.minStockLevel ? (
+                      ) : (product.stockQuantity || 0) <= (product.minStockLevel || 0) ? (
                         <span className="px-2 py-1 rounded-full bg-accent-amber/20 text-accent-amber text-xs">
                           Bajo
                         </span>
@@ -144,13 +147,22 @@ export function ProductsView() {
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center justify-center gap-2">
-                        <button className="p-2 rounded-lg hover:bg-glass-100 text-luxury-400 hover:text-white transition-colors">
+                        <button 
+                          onClick={() => openModal("viewProduct", product)}
+                          className="p-2 rounded-lg hover:bg-glass-100 text-luxury-400 hover:text-white transition-colors"
+                        >
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button className="p-2 rounded-lg hover:bg-glass-100 text-luxury-400 hover:text-white transition-colors">
+                        <button 
+                          onClick={() => openModal("editProduct", product)}
+                          className="p-2 rounded-lg hover:bg-glass-100 text-luxury-400 hover:text-white transition-colors"
+                        >
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button className="p-2 rounded-lg hover:bg-glass-100 text-accent-rose hover:text-accent-rose transition-colors">
+                        <button 
+                          onClick={() => { openModal("viewProduct", product); }}
+                          className="p-2 rounded-lg hover:bg-glass-100 text-accent-rose hover:text-accent-rose transition-colors"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>

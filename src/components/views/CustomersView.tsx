@@ -7,7 +7,7 @@ import { Users, Plus, Search, Filter, Eye, Edit, RefreshCw, Crown, Star, User, U
 import { useState } from "react";
 import { formatCurrency } from "@/data/mockData";
 
-const segmentConfig = {
+const segmentConfig: any = {
   vip: { label: "VIP", color: "violet", icon: Crown },
   premium: { label: "Premium", color: "cyan", icon: Star },
   regular: { label: "Regular", color: "emerald", icon: User },
@@ -16,13 +16,13 @@ const segmentConfig = {
 };
 
 export function CustomersView() {
-  const { customers, isLoading, refreshData } = useAppStore();
+  const { customers, isLoading, refreshData, openModal } = useAppStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSegment, setSelectedSegment] = useState("all");
 
-  const filteredCustomers = customers.filter(customer => {
-    const matchesSearch = customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           customer.email.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredCustomers = customers.filter((customer: any) => {
+    const matchesSearch = customer.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           customer.email?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSegment = selectedSegment === "all" || customer.segment === selectedSegment;
     return matchesSearch && matchesSegment;
   });
@@ -49,7 +49,10 @@ export function CustomersView() {
             >
               <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent-violet hover:bg-accent-violet/80 text-white font-medium transition-colors">
+            <button 
+              onClick={() => openModal("addCustomer")}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent-violet hover:bg-accent-violet/80 text-white font-medium transition-colors"
+            >
               <Plus className="w-4 h-4" />
               Nuevo Cliente
             </button>
@@ -59,8 +62,8 @@ export function CustomersView() {
         <main className="flex-1 overflow-y-auto p-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-            {Object.entries(segmentConfig).map(([key, config]) => {
-              const count = customers.filter(c => c.segment === key).length;
+            {Object.entries(segmentConfig).map(([key, config]: [string, any]) => {
+              const count = customers.filter((c: any) => c.segment === key).length;
               const SegmentIcon = config.icon;
               
               return (
@@ -103,7 +106,7 @@ export function CustomersView() {
                 className="px-4 py-2 rounded-xl bg-glass-100 border border-glass-border text-white focus:outline-none focus:border-accent-violet"
               >
                 <option value="all">Todos los segmentos</option>
-                {Object.entries(segmentConfig).map(([key, config]) => (
+                {Object.entries(segmentConfig).map(([key, config]: [string, any]) => (
                   <option key={key} value={key}>{config.label}</option>
                 ))}
               </select>
@@ -128,8 +131,8 @@ export function CustomersView() {
                 </tr>
               </thead>
               <tbody>
-                {filteredCustomers.map((customer) => {
-                  const segment = segmentConfig[customer.segment];
+                {filteredCustomers.map((customer: any) => {
+                  const segment = segmentConfig[customer.segment] || segmentConfig.new;
                   const SegmentIcon = segment.icon;
                   
                   return (
@@ -137,7 +140,7 @@ export function CustomersView() {
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-violet to-accent-cyan flex items-center justify-center text-white font-bold">
-                            {customer.name.charAt(0)}
+                            {customer.name?.charAt(0) || "?"}
                           </div>
                           <div>
                             <p className="text-white font-medium">{customer.name}</p>
@@ -152,22 +155,28 @@ export function CustomersView() {
                         </span>
                       </td>
                       <td className="py-4 px-4 text-right text-luxury-300">
-                        {customer.orderCount}
+                        {customer.orderCount || customer.order_count || 0}
                       </td>
                       <td className="py-4 px-4 text-right text-white font-medium">
-                        {formatCurrency(customer.totalPurchases)}
+                        {formatCurrency(customer.totalPurchases || customer.total_purchases || 0)}
                       </td>
                       <td className="py-4 px-4 text-right">
                         <span className="text-accent-violet font-medium">
-                          {formatCurrency(customer.clv)}
+                          {formatCurrency(customer.clv || 0)}
                         </span>
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex items-center justify-center gap-2">
-                          <button className="p-2 rounded-lg hover:bg-glass-100 text-luxury-400 hover:text-white transition-colors">
+                          <button 
+                            onClick={() => openModal("viewCustomer", customer)}
+                            className="p-2 rounded-lg hover:bg-glass-100 text-luxury-400 hover:text-white transition-colors"
+                          >
                             <Eye className="w-4 h-4" />
                           </button>
-                          <button className="p-2 rounded-lg hover:bg-glass-100 text-luxury-400 hover:text-white transition-colors">
+                          <button 
+                            onClick={() => openModal("editCustomer", customer)}
+                            className="p-2 rounded-lg hover:bg-glass-100 text-luxury-400 hover:text-white transition-colors"
+                          >
                             <Edit className="w-4 h-4" />
                           </button>
                         </div>

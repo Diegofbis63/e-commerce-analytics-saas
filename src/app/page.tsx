@@ -1,15 +1,20 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useEffect, Suspense } from "react";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 import { ProductsView } from "@/components/views/ProductsView";
 import { OrdersView } from "@/components/views/OrdersView";
 import { CustomersView } from "@/components/views/CustomersView";
 import { useAppStore } from "@/store/appStore";
+import { Modal, Notification } from "@/components/ui/Modal";
 
 function DashboardWithView() {
-  const { activeView } = useAppStore();
+  const { activeView, refreshData, isDemo } = useAppStore();
+
+  useEffect(() => {
+    refreshData();
+  }, []);
 
   switch (activeView) {
     case "products":
@@ -23,9 +28,9 @@ function DashboardWithView() {
     case "settings":
       return (
         <main className="min-h-screen bg-luxury-950 flex items-center justify-center">
-          <div className="text-center">
+          <div className="text-center glass-card p-8">
             <h1 className="text-2xl font-bold text-white mb-2">Configuración</h1>
-            <p className="text-luxury-400">Panel de configuracióncoming soon...</p>
+            <p className="text-luxury-400">Panel de configuración</p>
           </div>
         </main>
       );
@@ -37,6 +42,8 @@ function DashboardWithView() {
 export default function DashboardPage() {
   return (
     <Suspense fallback={<DashboardSkeleton />}>
+      <Notification />
+      <Modal />
       <DashboardWithView />
     </Suspense>
   );

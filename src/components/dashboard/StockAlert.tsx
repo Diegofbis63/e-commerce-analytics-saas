@@ -2,13 +2,17 @@
 
 import { useAppStore } from "@/store/appStore";
 import { motion } from "framer-motion";
-import { AlertTriangle, Package, RefreshCw } from "lucide-react";
+import { AlertTriangle, Package, RefreshCw, Eye } from "lucide-react";
 
 export function StockAlert() {
-  const { stockAlerts, isLoading, refreshData } = useAppStore();
+  const { stockAlerts, isLoading, refreshData, openModal, setActiveView } = useAppStore();
 
   const handleRefresh = () => {
     refreshData();
+  };
+
+  const handleViewProducts = () => {
+    setActiveView("products");
   };
 
   return (
@@ -83,7 +87,10 @@ export function StockAlert() {
         ))}
       </div>
 
-      <button className="mt-4 w-full py-2 px-4 rounded-xl bg-accent-violet/10 border border-accent-violet/30 text-accent-violet text-sm font-medium hover:bg-accent-violet/20 transition-colors">
+      <button 
+        onClick={handleViewProducts}
+        className="mt-4 w-full py-2 px-4 rounded-xl bg-accent-violet/10 border border-accent-violet/30 text-accent-violet text-sm font-medium hover:bg-accent-violet/20 transition-colors"
+      >
         Ver Todos los Productos
       </button>
     </motion.div>

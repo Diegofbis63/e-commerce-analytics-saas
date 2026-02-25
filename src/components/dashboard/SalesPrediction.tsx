@@ -2,7 +2,7 @@
 
 import { useAppStore } from "@/store/appStore";
 import { motion } from "framer-motion";
-import { Brain, TrendingUp, Calendar, RefreshCw } from "lucide-react";
+import { Brain, TrendingUp, Calendar, RefreshCw, ExternalLink } from "lucide-react";
 import { formatCurrency } from "@/data/mockData";
 
 export function SalesPrediction() {
@@ -10,6 +10,10 @@ export function SalesPrediction() {
 
   const handleRefresh = () => {
     refreshData();
+  };
+
+  const handleViewPredictions = () => {
+    console.log("Navigate to detailed predictions");
   };
 
   return (
@@ -72,9 +76,13 @@ export function SalesPrediction() {
       </div>
 
       <div className="mt-4 pt-4 border-t border-glass-border">
-        <button className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-glass-100 border border-glass-border text-luxury-300 text-sm font-medium hover:bg-glass-200 transition-colors">
+        <button 
+          onClick={handleViewPredictions}
+          className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-glass-100 border border-glass-border text-luxury-300 text-sm font-medium hover:bg-glass-200 transition-colors"
+        >
           <Calendar className="w-4 h-4" />
           Ver Predicciones Detalladas
+          <ExternalLink className="w-3 h-3" />
         </button>
       </div>
     </motion.div>

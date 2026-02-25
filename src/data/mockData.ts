@@ -1,5 +1,12 @@
 "use client";
 
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 export interface Product {
   id: string;
   name: string;
@@ -7,10 +14,10 @@ export interface Product {
   category: string;
   price: number;
   cost: number;
-  stockQuantity: number;
-  minStockLevel: number;
-  imageUrl?: string;
-  isActive: boolean;
+  stock_quantity: number;
+  min_stock_level: number;
+  image_url?: string;
+  is_active: boolean;
 }
 
 export interface Customer {
@@ -19,33 +26,21 @@ export interface Customer {
   name: string;
   phone?: string;
   segment: "vip" | "premium" | "regular" | "new" | "inactive";
-  totalPurchases: number;
-  orderCount: number;
+  total_purchases: number;
+  order_count: number;
   clv: number;
-  firstPurchaseDate?: string;
-  lastPurchaseDate?: string;
 }
 
 export interface Order {
   id: string;
-  customerId: string;
-  customerName: string;
+  customer_id: string;
+  customer_name: string;
   status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
   subtotal: number;
   tax: number;
-  shippingCost: number;
+  shipping_cost: number;
   total: number;
-  orderDate: string;
-  items: OrderItem[];
-}
-
-export interface OrderItem {
-  id: string;
-  productId: string;
-  productName: string;
-  quantity: number;
-  unitPrice: number;
-  total: number;
+  order_date: string;
 }
 
 export interface KpiData {
@@ -181,7 +176,7 @@ export const mockData = {
     { id: "6", name: "Apple Watch Series 9", sku: "AWS9", category: "Wearables", price: 399, cost: 250, stockQuantity: 56, minStockLevel: 20, isActive: true },
     { id: "7", name: "Sony WH-1000XM5", sku: "SONYXM5", category: "Audio", price: 349, cost: 180, stockQuantity: 34, minStockLevel: 15, isActive: true },
     { id: "8", name: "Nintendo Switch OLED", sku: "NSOLED", category: "Gaming", price: 349, cost: 220, stockQuantity: 0, minStockLevel: 10, isActive: true },
-  ] as Product[],
+  ] as any,
 
   customers: [
     { id: "1", email: "vip1@email.com", name: "Carlos García", segment: "vip" as const, totalPurchases: 8500, orderCount: 12, clv: 8500 },
@@ -189,15 +184,15 @@ export const mockData = {
     { id: "3", email: "premium1@email.com", name: "Juan Martínez", segment: "premium" as const, totalPurchases: 3200, orderCount: 6, clv: 3200 },
     { id: "4", email: "regular1@email.com", name: "Ana Rodríguez", segment: "regular" as const, totalPurchases: 890, orderCount: 3, clv: 890 },
     { id: "5", email: "new1@email.com", name: "Pedro Sánchez", segment: "new" as const, totalPurchases: 250, orderCount: 1, clv: 250 },
-  ] as Customer[],
+  ] as any,
 
   orders: [
-    { id: "1", customerId: "1", customerName: "Carlos García", status: "delivered" as const, subtotal: 1199, tax: 95.92, shippingCost: 0, total: 1294.92, orderDate: "2026-02-24", items: [] },
-    { id: "2", customerId: "2", customerName: "María López", status: "processing" as const, subtotal: 2498, tax: 199.84, shippingCost: 0, total: 2697.84, orderDate: "2026-02-23", items: [] },
-    { id: "3", customerId: "3", customerName: "Juan Martínez", status: "shipped" as const, subtotal: 799, tax: 63.92, shippingCost: 15, total: 877.92, orderDate: "2026-02-22", items: [] },
-    { id: "4", customerId: "4", customerName: "Ana Rodríguez", status: "pending" as const, subtotal: 449, tax: 35.92, shippingCost: 15, total: 499.92, orderDate: "2026-02-21", items: [] },
-    { id: "5", customerId: "5", customerName: "Pedro Sánchez", status: "cancelled" as const, subtotal: 199, tax: 15.92, shippingCost: 0, total: 0, orderDate: "2026-02-20", items: [] },
-  ] as Order[],
+    { id: "1", customerId: "1", customerName: "Carlos García", status: "delivered" as const, subtotal: 1199, tax: 95.92, shippingCost: 0, total: 1294.92, orderDate: "2026-02-24" },
+    { id: "2", customerId: "2", customerName: "María López", status: "processing" as const, subtotal: 2498, tax: 199.84, shippingCost: 0, total: 2697.84, orderDate: "2026-02-23" },
+    { id: "3", customerId: "3", customerName: "Juan Martínez", status: "shipped" as const, subtotal: 799, tax: 63.92, shippingCost: 15, total: 877.92, orderDate: "2026-02-22" },
+    { id: "4", customerId: "4", customerName: "Ana Rodríguez", status: "pending" as const, subtotal: 449, tax: 35.92, shippingCost: 15, total: 499.92, orderDate: "2026-02-21" },
+    { id: "5", customerId: "5", customerName: "Pedro Sánchez", status: "cancelled" as const, subtotal: 199, tax: 15.92, shippingCost: 0, total: 0, orderDate: "2026-02-20" },
+  ] as any,
 
   categories: [
     { id: "1", name: "Electrónica", productCount: 156 },

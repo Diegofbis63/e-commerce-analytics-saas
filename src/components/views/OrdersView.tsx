@@ -7,7 +7,7 @@ import { ShoppingCart, Plus, Search, Filter, Eye, RefreshCw, Package, Truck, Che
 import { useState } from "react";
 import { formatCurrency } from "@/data/mockData";
 
-const statusConfig = {
+const statusConfig: any = {
   pending: { label: "Pendiente", color: "amber", icon: Clock },
   processing: { label: "Procesando", color: "cyan", icon: Package },
   shipped: { label: "Enviado", color: "violet", icon: Truck },
@@ -16,13 +16,13 @@ const statusConfig = {
 };
 
 export function OrdersView() {
-  const { orders, isLoading, refreshData } = useAppStore();
+  const { orders, isLoading, refreshData, openModal } = useAppStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
 
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           order.id.includes(searchQuery);
+  const filteredOrders = orders.filter((order: any) => {
+    const matchesSearch = order.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           order.id?.includes(searchQuery);
     const matchesStatus = selectedStatus === "all" || order.status === selectedStatus;
     return matchesSearch && matchesStatus;
   });
@@ -49,7 +49,10 @@ export function OrdersView() {
             >
               <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent-violet hover:bg-accent-violet/80 text-white font-medium transition-colors">
+            <button 
+              onClick={() => openModal("addOrder")}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent-violet hover:bg-accent-violet/80 text-white font-medium transition-colors"
+            >
               <Plus className="w-4 h-4" />
               Nuevo Pedido
             </button>
@@ -77,7 +80,7 @@ export function OrdersView() {
                 className="px-4 py-2 rounded-xl bg-glass-100 border border-glass-border text-white focus:outline-none focus:border-accent-violet"
               >
                 <option value="all">Todos los estados</option>
-                {Object.entries(statusConfig).map(([key, config]) => (
+                {Object.entries(statusConfig).map(([key, config]: [string, any]) => (
                   <option key={key} value={key}>{config.label}</option>
                 ))}
               </select>
@@ -86,8 +89,8 @@ export function OrdersView() {
 
           {/* Orders Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredOrders.map((order) => {
-              const status = statusConfig[order.status];
+            {filteredOrders.map((order: any) => {
+              const status = statusConfig[order.status] || statusConfig.pending;
               const StatusIcon = status.icon;
               
               return (
@@ -95,6 +98,7 @@ export function OrdersView() {
                   key={order.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
+                  onClick={() => openModal("viewOrder", order)}
                   className="glass-card p-4 hover:scale-[1.02] transition-transform cursor-pointer"
                 >
                   <div className="flex items-center justify-between mb-4">
@@ -116,7 +120,7 @@ export function OrdersView() {
                   <div className="flex items-center justify-between pt-4 border-t border-glass-border">
                     <div>
                       <p className="text-luxury-500 text-xs">Total</p>
-                      <p className="text-lg font-bold text-white">{formatCurrency(order.total)}</p>
+                      <p className="text-lg font-bold text-white">{formatCurrency(order.total || 0)}</p>
                     </div>
                     <button className="p-2 rounded-lg hover:bg-glass-100 text-luxury-400 hover:text-white transition-colors">
                       <Eye className="w-5 h-5" />
