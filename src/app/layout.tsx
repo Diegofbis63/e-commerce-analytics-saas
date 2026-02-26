@@ -6,9 +6,6 @@ export const metadata: Metadata = {
   title: "E-commerce Analytics SaaS",
   description:
     "Dashboard de análisis de datos con IA para e-commerce. Predicciones de ventas, análisis de stock y segmentación de clientes VIP.",
-  icons: {
-    icon: "/favicon.ico",
-  },
 };
 
 export default function RootLayout({
