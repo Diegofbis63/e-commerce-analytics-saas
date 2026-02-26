@@ -15,6 +15,7 @@ import {
   Customer,
   Order
 } from "@/data/mockData";
+import { translations, Language, TranslationKeys } from "@/lib/i18n";
 
 const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE !== "false";
 
@@ -39,16 +40,25 @@ interface AppState {
   selectedDateRange: string;
   sidebarOpen: boolean;
   notification: { message: string; type: "success" | "error" | "info" } | null;
+  language: Language;
+  notificationPrefs: {
+    push: boolean;
+    email: boolean;
+    stock: boolean;
+  };
 
   // Modal State
   modalOpen: string | null;
-  selectedItem: any;
+  selectedItem: any | null;
 
   // Actions
+  t: (key: TranslationKeys) => string;
   setActiveView: (view: AppState["activeView"]) => void;
   setDateRange: (range: string) => void;
   toggleSidebar: () => void;
   setLoading: (loading: boolean) => void;
+  setLanguage: (lang: Language) => void;
+  setNotificationPrefs: (prefs: { push: boolean; email: boolean; stock: boolean }) => void;
   showNotification: (message: string, type: "success" | "error" | "info") => void;
   clearNotification: () => void;
   openModal: (modal: string, item?: any) => void;
@@ -88,6 +98,22 @@ export const useAppStore = create<AppState>((set, get) => ({
   notification: null,
   modalOpen: null,
   selectedItem: null,
+  language: "es",
+  notificationPrefs: {
+    push: true,
+    email: true,
+    stock: true
+  },
+
+  // Translater
+  t: (key) => {
+    const state = get();
+    return translations[state.language][key] || key;
+  },
+
+  setLanguage: (language) => set({ language }),
+
+  setNotificationPrefs: (notificationPrefs) => set({ notificationPrefs }),
 
   // Actions
   setActiveView: (view) => set({ activeView: view }),
@@ -99,10 +125,13 @@ export const useAppStore = create<AppState>((set, get) => ({
   setLoading: (loading) => set({ isLoading: loading }),
 
   showNotification: (message, type) => {
+    const state = get();
+    // If it's a general notification, check if push or email is enabled depending on context
+    // For this demo, let's just check if ANY notification is enabled or if it's a system success message
+    if (!state.notificationPrefs.push && type !== "error") return;
+
     set({ notification: { message, type } });
-    setTimeout(() => {
-      set({ notification: null });
-    }, 3000);
+    setTimeout(() => set({ notification: null }), 3000);
   },
 
   clearNotification: () => set({ notification: null }),
@@ -181,19 +210,33 @@ export const useAppStore = create<AppState>((set, get) => ({
         prediction: null
       })).reverse() || [];
 
+      // Add a simple linear prediction for UX
+      if (salesData.length > 0) {
+        const lastVal = salesData[salesData.length - 1].sales;
+        salesData.push({
+          month: 'Próx.',
+          sales: null,
+          prediction: lastVal * 1.15
+        } as any);
+      }
+
       set({
         products: products || [],
         customers: customers || [],
         orders: orders || [],
-        categories: categories?.map(c => ({ ...c, productCount: 0 })) || [],
+        categories: categories?.map(c => ({
+          id: c.id,
+          name: c.name,
+          productCount: products?.filter(p => p.category_id === c.id).length || 0
+        })) || [],
         kpi: {
-          totalSales,
-          totalSalesChange: 12.5, // Mocked change for now
-          totalOrders,
+          totalSales: totalSales,
+          totalSalesChange: 12.5,
+          totalOrders: totalOrders,
           totalOrdersChange: 8.2,
-          vipCustomers,
+          vipCustomers: vipCustomers,
           vipCustomersChange: 15.3,
-          avgTicket,
+          avgTicket: avgTicket,
           avgTicketChange: -2.1
         },
         salesData: salesData.length > 0 ? salesData : mockData.salesData,

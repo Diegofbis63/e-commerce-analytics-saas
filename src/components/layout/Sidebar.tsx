@@ -14,23 +14,21 @@ import {
   ChevronRight,
   Zap,
   TrendingUp,
-  Bell,
-  Search,
 } from "lucide-react";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", id: "dashboard" as const },
-  { icon: Package, label: "Productos", id: "products" as const },
-  { icon: ShoppingCart, label: "Pedidos", id: "orders" as const },
-  { icon: Users, label: "Clientes", id: "customers" as const },
-  { icon: BarChart3, label: "Analytics", id: "analytics" as const },
-  { icon: TrendingUp, label: "Predicciones", id: "analytics" as const },
-  { icon: Settings, label: "Configuración", id: "settings" as const },
-  { icon: HelpCircle, label: "Ayuda", id: "settings" as const },
+  { icon: LayoutDashboard, labelKey: "dashboard" as const, id: "dashboard" as const },
+  { icon: Package, labelKey: "inventory" as const, id: "products" as const },
+  { icon: ShoppingCart, labelKey: "orders" as const, id: "orders" as const },
+  { icon: Users, labelKey: "customers" as const, id: "customers" as const },
+  { icon: BarChart3, labelKey: "analytics" as const, id: "analytics" as const },
+  { icon: TrendingUp, labelKey: "predictions" as const, id: "predictions" as const },
+  { icon: Settings, labelKey: "settings" as const, id: "settings" as const },
+  { icon: HelpCircle, labelKey: "help" as const, id: "help" as const },
 ];
 
 export function Sidebar() {
-  const { sidebarOpen, activeView, setActiveView, toggleSidebar } = useAppStore();
+  const { sidebarOpen, activeView, setActiveView, toggleSidebar, t } = useAppStore();
 
   return (
     <motion.aside
@@ -74,11 +72,11 @@ export function Sidebar() {
       <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto custom-scrollbar">
         {menuItems.map((item) => (
           <button
-            key={item.label}
+            key={item.labelKey}
             onClick={() => setActiveView(item.id)}
             className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 relative group ${activeView === item.id
-                ? "bg-white/5 text-white shadow-inner shadow-white/5 border border-white/10"
-                : "text-luxury-400 hover:text-white hover:bg-white/[0.02]"
+              ? "bg-white/5 text-white shadow-inner shadow-white/5 border border-white/10"
+              : "text-luxury-400 hover:text-white hover:bg-white/[0.02]"
               }`}
           >
             <item.icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-300 ${activeView === item.id ? "text-accent-violet scale-110" : "group-hover:scale-110"}`} />
@@ -88,16 +86,17 @@ export function Sidebar() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
-                  className="text-sm font-semibold tracking-tight"
+                  className="text-sm font-semibold tracking-tight text-left"
                 >
-                  {item.label}
+                  {t(item.labelKey)}
                 </motion.span>
               )}
             </AnimatePresence>
             {activeView === item.id && (
               <motion.div
-                layoutId="active-nav"
-                className="absolute left-0 w-1 h-6 bg-accent-violet rounded-full blur-[1px]"
+                layoutId="active-nav-indicator"
+                className="absolute left-0 w-1.5 h-6 bg-accent-violet rounded-r-full shadow-[0_0_10px_rgba(139,92,246,0.5)] z-10"
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
               />
             )}
           </button>
@@ -139,7 +138,7 @@ export function Sidebar() {
                 className="flex-1 truncate"
               >
                 <p className="text-sm text-white font-bold tracking-tight">Federico</p>
-                <p className="text-[10px] text-luxury-500 font-bold uppercase tracking-widest">Chief Executive</p>
+                <p className="text-[10px] text-luxury-500 font-bold uppercase tracking-widest text-left">Chief Executive</p>
               </motion.div>
             )}
           </AnimatePresence>

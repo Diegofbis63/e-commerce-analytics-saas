@@ -5,22 +5,22 @@ import { useAppStore } from "@/store/appStore";
 import { Menu, Search, Bell, Calendar, RefreshCw, ChevronDown } from "lucide-react";
 
 const dateRanges = [
-  { id: "today", label: "Hoy" },
-  { id: "yesterday", label: "Ayer" },
-  { id: "last7days", label: "Últimos 7 días" },
-  { id: "last30days", label: "Últimos 30 días" },
-  { id: "thisMonth", label: "Este mes" },
-  { id: "lastMonth", label: "Mes pasado" },
+  { id: "today", labelKey: "today" as const },
+  { id: "yesterday", labelKey: "yesterday" as const },
+  { id: "last7days", labelKey: "last_7_days" as const },
+  { id: "last30days", labelKey: "last_30_days" as const },
+  { id: "thisMonth", labelKey: "this_month" as const },
+  { id: "lastMonth", labelKey: "last_month" as const },
 ];
 
 export function Header() {
-  const { selectedDateRange, setDateRange, isLoading, refreshData, toggleSidebar } = useAppStore();
+  const { selectedDateRange, setDateRange, isLoading, refreshData, toggleSidebar, t, language, showNotification } = useAppStore();
   const [searchOpen, setSearchOpen] = useState(false);
   const [dateOpen, setDateOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const currentDateRange = dateRanges.find(d => d.id === selectedDateRange);
-  const currentDate = new Date().toLocaleDateString("es-AR", {
+  const currentDate = new Date().toLocaleDateString(language === "es" ? "es-AR" : language === "en" ? "en-US" : "pt-BR", {
     weekday: "long",
     year: "numeric",
     month: "long",
@@ -53,7 +53,7 @@ export function Header() {
             <Search className="w-4 h-4 text-luxury-400" />
             <input
               type="text"
-              placeholder="Buscar..."
+              placeholder={t("search")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="flex-1 bg-transparent text-sm text-white placeholder-luxury-500 focus:outline-none"
@@ -66,24 +66,28 @@ export function Header() {
 
       {/* Right Section */}
       <div className="flex items-center gap-3">
+        <p className="hidden xl:block text-[10px] text-luxury-500 font-bold uppercase tracking-widest mr-4 opacity-60">
+          {currentDate}
+        </p>
+
         {/* Date Range Selector */}
         <div className="relative">
-          <button 
+          <button
             onClick={() => setDateOpen(!dateOpen)}
             className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-glass-100 border border-glass-border text-luxury-400 hover:text-white transition-colors"
           >
             <Calendar className="w-4 h-4" />
-            <span className="text-sm">{currentDateRange?.label}</span>
+            <span className="text-sm">{currentDateRange ? t(currentDateRange.labelKey) : ""}</span>
             <ChevronDown className="w-4 h-4" />
           </button>
-          
+
           {dateOpen && (
             <>
-              <div 
-                className="fixed inset-0 z-40" 
+              <div
+                className="fixed inset-0 z-40"
                 onClick={() => setDateOpen(false)}
               />
-              <div className="absolute right-0 top-full mt-2 w-48 py-2 rounded-xl bg-luxury-900 border border-glass-border shadow-lg z-50">
+              <div className="absolute right-0 top-full mt-2 w-48 py-2 rounded-xl bg-luxury-900 border border-white/5 shadow-2xl z-50 backdrop-blur-3xl">
                 {dateRanges.map((range) => (
                   <button
                     key={range.id}
@@ -91,13 +95,12 @@ export function Header() {
                       setDateRange(range.id);
                       setDateOpen(false);
                     }}
-                    className={`w-full px-4 py-2 text-left text-sm hover:bg-glass-100 transition-colors ${
-                      selectedDateRange === range.id 
-                        ? "text-accent-violet" 
-                        : "text-luxury-400"
-                    }`}
+                    className={`w-full px-4 py-2 text-left text-sm hover:bg-glass-100 transition-colors ${selectedDateRange === range.id
+                      ? "text-accent-violet font-bold"
+                      : "text-luxury-400"
+                      }`}
                   >
-                    {range.label}
+                    {t(range.labelKey)}
                   </button>
                 ))}
               </div>
@@ -106,7 +109,7 @@ export function Header() {
         </div>
 
         {/* Refresh Button */}
-        <button 
+        <button
           onClick={handleRefresh}
           disabled={isLoading}
           className="p-2 rounded-lg hover:bg-glass-100 text-luxury-400 transition-colors disabled:opacity-50"
@@ -115,10 +118,27 @@ export function Header() {
         </button>
 
         {/* Notifications */}
-        <button className="relative p-2 rounded-lg hover:bg-glass-100 text-luxury-400 transition-colors">
+        <button
+          onClick={() => showNotification("Info system update successful", "info")}
+          className="relative p-2 rounded-lg hover:bg-glass-100 text-luxury-400 transition-colors"
+        >
           <Bell className="w-5 h-5" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-accent-rose rounded-full" />
+          <span className="absolute top-1 right-1 w-2 h-2 bg-accent-rose rounded-full animate-pulse" />
         </button>
+
+        {/* Profile */}
+        <div className="relative ml-2">
+          <button
+            onClick={() => useAppStore.getState().setActiveView("settings")}
+            className="flex items-center gap-3 p-1 rounded-full bg-glass-100 border border-white/5 hover:border-accent-violet/30 transition-all"
+          >
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent-violet to-accent-cyan p-0.5">
+              <div className="w-full h-full rounded-full bg-luxury-900 flex items-center justify-center">
+                <span className="text-[10px] font-black text-white">AD</span>
+              </div>
+            </div>
+          </button>
+        </div>
       </div>
     </header>
   );

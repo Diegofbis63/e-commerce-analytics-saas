@@ -5,11 +5,11 @@ import { KpiCard } from "./KpiCard";
 import { formatCurrency, formatNumber } from "@/data/mockData";
 
 export function KpiCards() {
-  const { kpi } = useAppStore();
+  const { kpi, t } = useAppStore();
 
   const kpis = [
     {
-      title: "Ventas Totales",
+      title: t("total_sales"),
       value: formatCurrency(kpi.totalSales),
       change: `${kpi.totalSalesChange > 0 ? "+" : ""}${kpi.totalSalesChange}%`,
       trend: kpi.totalSalesChange >= 0 ? "up" as const : "down" as const,
@@ -17,7 +17,7 @@ export function KpiCards() {
       color: "cyan" as const,
     },
     {
-      title: "Pedidos",
+      title: t("orders"),
       value: formatNumber(kpi.totalOrders),
       change: `${kpi.totalOrdersChange > 0 ? "+" : ""}${kpi.totalOrdersChange}%`,
       trend: kpi.totalOrdersChange >= 0 ? "up" as const : "down" as const,
@@ -25,7 +25,7 @@ export function KpiCards() {
       color: "violet" as const,
     },
     {
-      title: "Clientes VIP",
+      title: t("vip_customers"),
       value: formatNumber(kpi.vipCustomers),
       change: `${kpi.vipCustomersChange > 0 ? "+" : ""}${kpi.vipCustomersChange}%`,
       trend: kpi.vipCustomersChange >= 0 ? "up" as const : "down" as const,
@@ -33,7 +33,7 @@ export function KpiCards() {
       color: "emerald" as const,
     },
     {
-      title: "Ticket Promedio",
+      title: t("avg_ticket"),
       value: formatCurrency(kpi.avgTicket),
       change: `${kpi.avgTicketChange > 0 ? "+" : ""}${kpi.avgTicketChange}%`,
       trend: kpi.avgTicketChange >= 0 ? "up" as const : "down" as const,
